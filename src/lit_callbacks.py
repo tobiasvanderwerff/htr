@@ -1,7 +1,7 @@
 import math
 from typing import Tuple, Optional
 
-from lit_models import LitFullPageHTREncoderDecoder
+from models.lit_models import LitFullPageHTREncoderDecoder
 from util import matplotlib_imshow, LabelEncoder, decode_prediction_and_target
 from data import IAMDataset
 

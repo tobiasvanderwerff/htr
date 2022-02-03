@@ -10,3 +10,23 @@ Current models include:
 git clone git@github.com:tobiasvanderwerff/htr.git
 pip install -e .
 ```
+
+## Examples
+### FPHTR
+```shell
+python src/main.py --data_dir /path/to/IAM \
+                   --model fphtr \
+                   --data_format word \
+                   --max_epochs 3 \
+                   --precision 16 \
+                   --use_aachen_splits \
+```
+
+### SAR
+```shell
+python src/main.py --data_dir /path/to/IAM \
+                   --model sar \
+                   --max_epochs 3 \
+                   --precision 16 \
+                   --use_aachen_splits \
+```

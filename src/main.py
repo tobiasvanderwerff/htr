@@ -7,7 +7,7 @@ from copy import copy
 from pathlib import Path
 from functools import partial
 
-from src.models.lit_models import LitFullPageHTREncoderDecoder
+from src.models.lit_models import LitFullPageHTREncoderDecoder, LitShowAttendRead
 from src.lit_callbacks import (
     LogModelPredictions,
     LogWorstPredictions,
@@ -162,42 +162,77 @@ def main(args):
         assert Path(model_path).is_file(), f"{model_path} does not point to a file."
         # Load the model. Note that the vocab length and special tokens given below
         # are derived from the saved label encoder associated with the checkpoint.
-        model = LitFullPageHTREncoderDecoder.load_from_checkpoint(
-            str(model_path),
-            label_encoder=ds.label_enc,
-            vocab_len=n_classes_saved,
-        )
+        if args.model == "fphtr":
+            model = LitFullPageHTREncoderDecoder.load_from_checkpoint(
+                str(model_path),
+                label_encoder=ds.label_enc,
+                vocab_len=n_classes_saved,
+            )
+        else:  # SAR
+            model = LitShowAttendRead.load_from_checkpoint(
+                str(model_path),
+                label_encoder=ds.label_enc,
+                vocab_len=n_classes_saved,
+            )
         if args.load_model:
             model.model.set_num_output_classes(ds.label_enc.n_classes)
     else:
-        model = LitFullPageHTREncoderDecoder(
-            label_encoder=ds.label_enc,
-            learning_rate=args.fphtr_learning_rate,
-            max_seq_len=IAMDataset.MAX_SEQ_LENS[args.data_format],
-            d_model=args.fphtr_d_model,
-            num_layers=args.fphtr_num_layers,
-            nhead=args.fphtr_nhead,
-            dim_feedforward=args.fphtr_dim_feedforward,
-            encoder_name=args.fphtr_encoder,
-            drop_enc=args.fphtr_drop_enc,
-            drop_dec=args.fphtr_drop_dec,
-            params_to_log={
-                "batch_size": int(args.num_nodes * args.batch_size)
-                * (args.accumulate_grad_batches or 1),
-                "data_format": args.data_format,
-                "seed": args.seed,
-                "splits": ("Aachen" if args.use_aachen_splits else "random"),
-                "max_epochs": args.max_epochs,
-                "num_nodes": args.num_nodes,
-                "precision": args.precision,
-                "accumulate_grad_batches": args.accumulate_grad_batches,
-                "early_stopping_patience": args.early_stopping_patience,
-                "synthetic_augmentation_proba": args.synthetic_augmentation_proba,
-                "gradient_clip_val": args.gradient_clip_val,
-                "only_lowercase": args.use_lowercase,
-                "loaded_model": args.load_model,
-            },
-        )
+        if args.model == "fphtr":
+            model = LitFullPageHTREncoderDecoder(
+                label_encoder=ds.label_enc,
+                learning_rate=args.fphtr_learning_rate,
+                max_seq_len=IAMDataset.MAX_SEQ_LENS[args.data_format],
+                d_model=args.fphtr_d_model,
+                num_layers=args.fphtr_num_layers,
+                nhead=args.fphtr_nhead,
+                dim_feedforward=args.fphtr_dim_feedforward,
+                encoder_name=args.fphtr_encoder,
+                drop_enc=args.fphtr_drop_enc,
+                drop_dec=args.fphtr_drop_dec,
+                params_to_log={
+                    "batch_size": int(args.num_nodes * args.batch_size)
+                    * (args.accumulate_grad_batches or 1),
+                    "data_format": args.data_format,
+                    "seed": args.seed,
+                    "splits": ("Aachen" if args.use_aachen_splits else "random"),
+                    "max_epochs": args.max_epochs,
+                    "num_nodes": args.num_nodes,
+                    "precision": args.precision,
+                    "accumulate_grad_batches": args.accumulate_grad_batches,
+                    "early_stopping_patience": args.early_stopping_patience,
+                    "synthetic_augmentation_proba": args.synthetic_augmentation_proba,
+                    "gradient_clip_val": args.gradient_clip_val,
+                    "only_lowercase": args.use_lowercase,
+                    "loaded_model": args.load_model,
+                },
+            )
+        else:  # SAR
+            model = LitShowAttendRead(
+                label_encoder=ds.label_enc,
+                learning_rate=args.fphtr_learning_rate,
+                max_seq_len=IAMDataset.MAX_SEQ_LENS["word"],
+                d_enc=args.sar_d_enc,
+                d_model=args.sar_d_model,
+                d_k=args.sar_d_k,
+                dec_dropout=args.sar_dec_dropout,
+                enc_dropout=args.sar_enc_dropout,
+                pred_dropout=args.sar_pred_dropout,
+                params_to_log={
+                    "batch_size": int(args.num_nodes * args.batch_size)
+                    * (args.accumulate_grad_batches or 1),
+                    "data_format": "word",
+                    "seed": args.seed,
+                    "splits": ("Aachen" if args.use_aachen_splits else "random"),
+                    "max_epochs": args.max_epochs,
+                    "num_nodes": args.num_nodes,
+                    "precision": args.precision,
+                    "accumulate_grad_batches": args.accumulate_grad_batches,
+                    "early_stopping_patience": args.early_stopping_patience,
+                    "gradient_clip_val": args.gradient_clip_val,
+                    "only_lowercase": args.use_lowercase,
+                    "loaded_model": args.load_model,
+                },
+            )
 
     callbacks = [
         ModelCheckpoint(
@@ -323,6 +358,7 @@ if __name__ == "__main__":
     # fmt: on
 
     parser = LitFullPageHTREncoderDecoder.add_model_specific_args(parser)
+    parser = LitShowAttendRead.add_model_specific_args(parser)
     parser = Trainer.add_argparse_args(parser)  # adds Pytorch Lightning arguments
 
     args = parser.parse_args()
