@@ -7,10 +7,14 @@ from copy import copy
 from pathlib import Path
 from functools import partial
 
-from lit_models import LitFullPageHTREncoderDecoder
-from lit_callbacks import LogModelPredictions, LogWorstPredictions, PREDICTIONS_TO_LOG
-from data import IAMDataset, IAMDatasetSynthetic, IAMSyntheticDataGenerator
-from util import LitProgressBar, LabelEncoder
+from src.models.lit_models import LitFullPageHTREncoderDecoder
+from src.lit_callbacks import (
+    LogModelPredictions,
+    LogWorstPredictions,
+    PREDICTIONS_TO_LOG,
+)
+from src.data import IAMDataset, IAMDatasetSynthetic, IAMSyntheticDataGenerator
+from src.util import LitProgressBar, LabelEncoder
 
 import torch
 from torch.utils.data import DataLoader, Subset
@@ -23,6 +27,8 @@ LOGGING_DIR = "lightning_logs/"
 
 
 def main(args):
+
+    print(f"Model used: {str(args.model).upper()}")
 
     seed_everything(args.seed)
 
@@ -166,16 +172,15 @@ def main(args):
     else:
         model = LitFullPageHTREncoderDecoder(
             label_encoder=ds.label_enc,
-            learning_rate=args.learning_rate,
+            learning_rate=args.fphtr_learning_rate,
             max_seq_len=IAMDataset.MAX_SEQ_LENS[args.data_format],
-            d_model=args.d_model,
-            num_layers=args.num_layers,
-            nhead=args.nhead,
-            dim_feedforward=args.dim_feedforward,
-            encoder_name=args.encoder,
-            drop_enc=args.drop_enc,
-            drop_dec=args.drop_dec,
-            label_smoothing=args.label_smoothing,
+            d_model=args.fphtr_d_model,
+            num_layers=args.fphtr_num_layers,
+            nhead=args.fphtr_nhead,
+            dim_feedforward=args.fphtr_dim_feedforward,
+            encoder_name=args.fphtr_encoder,
+            drop_enc=args.fphtr_drop_enc,
+            drop_dec=args.fphtr_drop_dec,
             params_to_log={
                 "batch_size": int(args.num_nodes * args.batch_size)
                 * (args.accumulate_grad_batches or 1),
@@ -187,7 +192,6 @@ def main(args):
                 "precision": args.precision,
                 "accumulate_grad_batches": args.accumulate_grad_batches,
                 "early_stopping_patience": args.early_stopping_patience,
-                "label_smoothing": args.label_smoothing,
                 "synthetic_augmentation_proba": args.synthetic_augmentation_proba,
                 "gradient_clip_val": args.gradient_clip_val,
                 "only_lowercase": args.use_lowercase,
@@ -285,6 +289,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # fmt: off
+    parser.add_argument("--model", type=str, required=True, choices=["fphtr", "sar"],
+                        default="fphtr")
     parser.add_argument("--data_dir", type=str)
     parser.add_argument("--data_format", type=str, choices=["form", "line", "word"],
                         default="word")
@@ -292,8 +298,6 @@ if __name__ == "__main__":
     parser.add_argument("--synthetic_augmentation_proba", type=float, default=0.0,
                         help=("Probability of sampling synthetic IAM line/form images "
                               "during training."))
-    parser.add_argument("--label_smoothing", type=float, default=0.0,
-                        help="Label smoothing epsilon (0.0 indicates no smoothing)")
     parser.add_argument("--load_model", type=str, default=None,
                         help="Start training from a saved model, specified by its "
                              "checkpoint path.")

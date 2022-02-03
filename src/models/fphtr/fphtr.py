@@ -6,8 +6,8 @@ via Image to Sequence Extraction" by Singh et al.
 import math
 from typing import Dict, Any, Tuple, Optional, Union, Callable
 
-from metrics import CharacterErrorRate, WordErrorRate
-from util import LabelEncoder
+from src.metrics import CharacterErrorRate, WordErrorRate
+from src.util import LabelEncoder
 
 import torch
 import torch.nn as nn
@@ -321,7 +321,7 @@ class FullPageHTREncoderDecoder(nn.Module):
         drop_enc: int = 0.5,
         drop_dec: int = 0.5,
         activ_dec: str = "gelu",
-        label_smoothing: float = 0.0,
+        loss_reduction: str = "mean",
         vocab_len: Optional[int] = None,
     ):
         """
@@ -341,8 +341,8 @@ class FullPageHTREncoderDecoder(nn.Module):
             drop_enc (int): dropout rate used in the encoder
             drop_dec (int): dropout rate used in the decoder
             activ_dec (str): activation function of the decoder
-            label_smoothing (float): label smoothing epsilon for the cross-entropy
-                loss (0.0 indicates no smoothing)
+            loss_reduction (str): specifies the reduction to apply to the loss
+                output: 'none' | 'mean' | 'sum'. Default: 'mean'.
             vocab_len (Optional[int]): length of the vocabulary. If passed,
                 it is used rather than the length of the classes in the label encoder
         """
@@ -376,7 +376,7 @@ class FullPageHTREncoderDecoder(nn.Module):
         self.cer_metric = CharacterErrorRate(label_encoder)
         self.wer_metric = WordErrorRate(label_encoder)
         self.loss_fn = nn.CrossEntropyLoss(
-            ignore_index=self.pad_tkn_idx, label_smoothing=label_smoothing
+            ignore_index=self.pad_tkn_idx, reduction=loss_reduction
         )
 
     def forward(
