@@ -209,7 +209,7 @@ def main(args):
         else:  # SAR
             model = LitShowAttendRead(
                 label_encoder=ds.label_enc,
-                learning_rate=args.fphtr_learning_rate,
+                learning_rate=args.sar_learning_rate,
                 max_seq_len=IAMDataset.MAX_SEQ_LENS["word"],
                 d_enc=args.sar_d_enc,
                 d_model=args.sar_d_model,
