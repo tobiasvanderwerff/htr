@@ -169,6 +169,9 @@ class ResNet31HTR(nn.Module):
 
     def forward(self, x):
 
+        if x.ndim == 3:
+            x.unsqueeze_(1)
+
         x = self.conv1_1(x)
         x = self.bn1_1(x)
         x = self.relu1_1(x)
