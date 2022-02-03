@@ -95,7 +95,7 @@ class LogWorstPredictions(Callback):
         fig = plt.figure(figsize=(24, 16))
         for i, (im, cer, prd, tgt) in enumerate(img_cers):
             pred_str, target_str = decode_prediction_and_target(
-                prd, tgt, pl_module.model.label_encoder, pl_module.decoder.eos_tkn_idx
+                prd, tgt, pl_module.model.label_encoder, pl_module.model.eos_tkn_idx
             )
 
             # Create plot.
@@ -182,7 +182,7 @@ class LogModelPredictions(Callback):
         fig = plt.figure(figsize=(12, 16))
         for i, (p, t) in enumerate(zip(preds, targets)):
             pred_str, target_str = decode_prediction_and_target(
-                p, t, self.label_encoder, pl_module.decoder.eos_tkn_idx
+                p, t, self.label_encoder, pl_module.model.eos_tkn_idx
             )
 
             # Create plot.
