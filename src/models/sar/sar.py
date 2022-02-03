@@ -198,7 +198,7 @@ class ShowAttendRead(nn.Module):
             - logits, obtained at each time step during decoding
             - loss value
         """
-        feats = self.resnet_encoder(imgs)
+        feats = self.resnet_encoder(imgs.unsqueeze(1))
         h_holistic = self.lstm_encoder(feats)
         logits = self.lstm_decoder.forward_teacher_forcing(feats, h_holistic, targets)
         loss = self.loss_fn(logits.transpose(1, 2), targets)
