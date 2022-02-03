@@ -77,6 +77,7 @@ class LogWorstPredictions(Callback):
         print(f"Running {mode} inference on best model...")
 
         # Run inference on the validation set.
+        is_train = pl_module.training
         pl_module.eval()
         for img, target in dataloader:
             assert target.ndim == 2, target.ndim
@@ -87,6 +88,7 @@ class LogWorstPredictions(Callback):
                     cer_metric.reset()
                     cer = cer_metric(prd.unsqueeze(0), tgt.unsqueeze(0)).item()
                     img_cers.append((im, cer, prd, tgt))
+        pl_module.train(is_train)
 
         # Log the worst k predictions.
         to_log = PREDICTIONS_TO_LOG[self.data_format] * 2
@@ -174,9 +176,12 @@ class LogModelPredictions(Callback):
             imgs, targets = self.train_batch
         else:  # split == "val"
             imgs, targets = self.val_batch
+
+        is_train = pl_module.training
+        pl_module.eval()
         with torch.inference_mode():
-            pl_module.eval()
             _, preds, _ = pl_module(imgs.cuda() if self.use_gpu else imgs)
+        pl_module.train(is_train)
 
         # Decode predictions and generate a plot.
         fig = plt.figure(figsize=(12, 16))

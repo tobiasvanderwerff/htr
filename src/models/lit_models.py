@@ -82,7 +82,7 @@ class LitShowAttendRead(pl.LightningModule):
     def forward(self, imgs: Tensor, targets: Optional[Tensor] = None):
         return self.model(imgs, targets)
 
-    def training_step(self, batch, batch_idx, log_results=True):
+    def training_step(self, batch, batch_idx):
         imgs, targets = batch
         logits, loss = self.model.forward_teacher_forcing(imgs, targets)
         self.log("train_loss", loss, sync_dist=True, prog_bar=False)
@@ -221,7 +221,7 @@ class LitFullPageHTREncoderDecoder(pl.LightningModule):
     def forward(self, imgs: Tensor, targets: Optional[Tensor] = None):
         return self.model(imgs, targets)
 
-    def training_step(self, batch, batch_idx, log_results=True):
+    def training_step(self, batch, batch_idx):
         imgs, targets = batch
         logits, loss = self.model.forward_teacher_forcing(imgs, targets)
         self.log("train_loss", loss, sync_dist=True, prog_bar=False)
