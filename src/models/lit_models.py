@@ -112,9 +112,10 @@ class LitShowAttendRead(pl.LightningModule):
         optimizer = optim.Adam(self.parameters(), lr=self.learning_rate)
 
         def _decay_factor(epoch: int, max_epoch: int, factor: float):
-            # assuming 50.000 train examples in IAM, and decaying every 10.000 iterations
-            # (as specified in the SAR paper), decay every 5 epochs.
-            if epoch == 0 or epoch % 5 != 0 or epoch >= max_epoch:
+            # In the SAR paper they decay every 10.000 steps, which is about 1/5 of
+            # the IAM training samples. However, since we can only decay per epoch,
+            # simply decay once per epoch.
+            if epoch >= max_epoch:
                 return 1
             return factor
 
