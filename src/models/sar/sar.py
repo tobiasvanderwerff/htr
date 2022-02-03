@@ -460,7 +460,7 @@ class ShowAttendRead(nn.Module):
         """
         feats = self.resnet_encoder(imgs)
         h_holistic = self.lstm_encoder(feats)
-        logits, sampled_ids = self.lstm_decoder(feats, h_holistic, targets)
+        logits, sampled_ids = self.lstm_decoder(feats, h_holistic)
 
         loss = None
         if targets is not None:
