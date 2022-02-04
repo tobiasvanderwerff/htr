@@ -1,7 +1,7 @@
 import math
 from typing import Tuple, Optional
 
-from models.lit_models import LitFullPageHTREncoderDecoder
+from models.lit_models import LitFullPageHTREncoderDecoder, LitShowAttendRead
 from util import matplotlib_imshow, LabelEncoder, decode_prediction_and_target
 from data import IAMDataset
 
@@ -126,10 +126,16 @@ class LogWorstPredictions(Callback):
 
         print(f"Loading best model at {best_model_path}")
         label_encoder = pl_module.model.label_encoder
-        model = LitFullPageHTREncoderDecoder.load_from_checkpoint(
-            best_model_path,
-            label_encoder=label_encoder,
-        )
+        if isinstance(pl_module, LitFullPageHTREncoderDecoder):
+            model = LitFullPageHTREncoderDecoder.load_from_checkpoint(
+                best_model_path,
+                label_encoder=label_encoder,
+            )
+        else:  # SAR
+            model = LitShowAttendRead.load_from_checkpoint(
+                best_model_path,
+                label_encoder=label_encoder,
+            )
         trainer.model = model
 
 
