@@ -182,6 +182,15 @@ class SARDecoder(nn.Module):
                 else None
             )
 
+        # Shift the target elements one step to the right.
+        bsz = targets.size(0)
+        targets = torch.cat(
+            [
+                torch.full([bsz], self.sos_tkn_idx).unsqueeze(1).to(targets.device),
+                targets[:, :-1],
+            ],
+            1,
+        )
         tgt_embedding = self.embedding(targets)  # bsz * seq_len * emb_dim
         out_enc = out_enc.unsqueeze(1)  # bsz * 1 * emb_dim
         in_dec = torch.cat((out_enc, tgt_embedding), dim=1)  # bsz * (seq_len + 1) * C
