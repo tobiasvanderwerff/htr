@@ -71,7 +71,6 @@ class SARDecoder(nn.Module):
         self.pad_tkn_idx = pad_tkn_idx
         self.enc_bi_rnn = enc_bi_rnn
         self.d_k = d_k
-        self.sos_tkn_idx = sos_tkn_idx
         self.max_seq_len = max_seq_len
         self.mask = mask
         self.pred_concat = pred_concat
@@ -98,9 +97,7 @@ class SARDecoder(nn.Module):
             self.rnn_decoder = nn.LSTM(**kwargs)
 
         # Decoder input embedding
-        self.embedding = nn.Embedding(
-            self.num_classes, encoder_rnn_out_size, padding_idx=pad_tkn_idx
-        )
+        self.embedding = nn.Embedding(self.num_classes, encoder_rnn_out_size)
 
         # Prediction layer
         self.pred_dropout = nn.Dropout(pred_dropout)
@@ -198,7 +195,7 @@ class SARDecoder(nn.Module):
         Args:
             feat (Tensor): Tensor of shape :math:`(N, D_i, H, W)`.
             out_enc (Tensor): Encoder output of shape
-                :math:`(N, D_m, H, W)`.
+                :math:`(N, D_m)`.
             img_metas (dict): A dict that contains meta information of input
                 images. Preferably with the key ``valid_ratio``.
 
@@ -222,11 +219,10 @@ class SARDecoder(nn.Module):
         seq_len = self.max_seq_len
 
         bsz = feat.size(0)
-        start_token = torch.full(
-            (bsz,), self.sos_tkn_idx, device=feat.device, dtype=torch.long
-        )
-        sampled_ids = [start_token]
-        start_token = self.embedding(start_token)  # bsz * emb_dim
+        sampled_ids = [
+            torch.full((bsz,), self.sos_tkn_idx, device=feat.device, dtype=torch.long)
+        ]
+        start_token = self.embedding(sampled_ids[0])  # bsz * emb_dim
         # bsz * seq_len * emb_dim
         start_token = start_token.unsqueeze(1).expand(-1, seq_len, -1)
         out_enc = out_enc.unsqueeze(1)  # bsz * 1 * emb_dim
@@ -393,7 +389,7 @@ class ShowAttendRead(nn.Module):
         self.resnet_encoder = ResNet31HTR(
             base_channels=1,
             layers=[1, 2, 5, 3],
-            channels=[64, 128, 256, 256, 512, 512, d_model],
+            channels=[64, 128, 256, 256, d_model, d_model, d_model],
         )
         self.lstm_encoder = SAREncoder(
             dropout=enc_dropout,

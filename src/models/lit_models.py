@@ -115,7 +115,7 @@ class LitShowAttendRead(pl.LightningModule):
             # In the SAR paper they decay every 10.000 steps, which is about 1/5 of
             # the IAM training samples. However, since we can only decay per epoch,
             # simply decay once per epoch.
-            if epoch >= max_epoch:
+            if epoch == 0 or epoch >= max_epoch:
                 return 1
             return factor
 
