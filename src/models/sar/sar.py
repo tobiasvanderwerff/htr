@@ -230,6 +230,7 @@ class SARDecoder(nn.Module):
         decoder_input = torch.cat((out_enc, start_token), dim=1)
 
         logits = []
+        eos_sampled = torch.zeros(bsz).bool()
         for i in range(1, seq_len + 1):
             decoder_output = self._2d_attention(
                 decoder_input, feat, out_enc, valid_ratios=valid_ratios
@@ -238,6 +239,12 @@ class SARDecoder(nn.Module):
             _, pred = torch.max(char_output, dim=1, keepdim=False)
             logits.append(char_output)
             sampled_ids.append(pred)
+            for j, pr in enumerate(pred):
+                # Check if <EOS> is sampled for each token sequence in the batch.
+                if pr == self.eos_tkn_idx:
+                    eos_sampled[j] = True
+            if eos_sampled.all():
+                break
             char_embedding = self.embedding(pred)  # bsz * emb_dim
             if i < seq_len:
                 decoder_input[:, i + 1, :] = char_embedding
