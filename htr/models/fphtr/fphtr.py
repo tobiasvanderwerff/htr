@@ -57,7 +57,7 @@ class PositionalEmbedding1D(nn.Module):
 class PositionalEmbedding2D(nn.Module):
     """Implements 2D sinusoidal embeddings. See p.7 of Singh et al. for more details."""
 
-    def __init__(self, d_model, max_len=100):
+    def __init__(self, d_model, max_len=1000):
         super().__init__()
 
         assert d_model % 4 == 0
