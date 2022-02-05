@@ -11,7 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 
-from src.models.sar.resnet31_htr import ResNet31HTR
+from src.models.resnet31 import ResNet31HTR
 from src.metrics import CharacterErrorRate, WordErrorRate
 from src.util import LabelEncoder
 
@@ -402,11 +402,7 @@ class ShowAttendRead(nn.Module):
             ["<EOS>", "<SOS>", "<PAD>"]
         )
 
-        self.resnet_encoder = ResNet31HTR(
-            base_channels=1,
-            layers=[1, 2, 5, 3],
-            channels=[64, 128, 256, 256, d_model, d_model, d_model],
-        )
+        self.resnet_encoder = ResNet31HTR.resnet31_std_config(base_channels=1)
         self.lstm_encoder = SAREncoder(
             dropout=enc_dropout,
             d_model=d_model,

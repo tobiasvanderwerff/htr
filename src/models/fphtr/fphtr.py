@@ -8,6 +8,7 @@ from typing import Dict, Any, Tuple, Optional, Union, Callable
 
 from src.metrics import CharacterErrorRate, WordErrorRate
 from src.util import LabelEncoder
+from src.models.resnet31 import ResNet31HTR
 
 import torch
 import torch.nn as nn
@@ -265,7 +266,7 @@ class FullPageHTREncoder(nn.Module):
         super().__init__()
 
         assert d_model % 4 == 0
-        _models = ["resnet18", "resnet34", "resnet50"]
+        _models = ["resnet18", "resnet34", "resnet50", "resnet31"]
         err_message = f"{model_name} is not an available option: {_models}"
         assert model_name in _models, err_message
 
@@ -274,22 +275,28 @@ class FullPageHTREncoder(nn.Module):
         self.pos_emb = PositionalEmbedding2D(d_model)
         self.drop = nn.Dropout(p=dropout)
 
-        resnet = getattr(torchvision.models, model_name)(pretrained=False)
-        modules = list(resnet.children())
+        if model_name != "resnet31":
+            resnet = getattr(torchvision.models, model_name)(pretrained=False)
+            modules = list(resnet.children())
 
-        # Change the first conv layer to take as input a single channel image.
-        cnv_1 = modules[0]
-        cnv_1 = nn.Conv2d(
-            1,
-            cnv_1.out_channels,
-            cnv_1.kernel_size,
-            cnv_1.stride,
-            cnv_1.padding,
-            bias=cnv_1.bias,
-        )
-        self.encoder = nn.Sequential(cnv_1, *modules[1:-2])
+            # Change the first conv layer to take as input a single channel image.
+            cnv_1 = modules[0]
+            cnv_1 = nn.Conv2d(
+                1,
+                cnv_1.out_channels,
+                cnv_1.kernel_size,
+                cnv_1.stride,
+                cnv_1.padding,
+                bias=cnv_1.bias,
+            )
+            self.encoder = nn.Sequential(cnv_1, *modules[1:-2])
+            num_out_feats = resnet.fc.in_features
+        else:  # resnet31
+            self.encoder = ResNet31HTR.resnet31_std_config(base_channels=1)
+            num_out_feats = self.encoder.conv5.out_channels
+
         self.linear = nn.Conv2d(
-            resnet.fc.in_features, d_model, kernel_size=1
+            num_out_feats, d_model, kernel_size=1
         )  # 1x1 convolution
 
     def forward(self, imgs):
@@ -337,7 +344,7 @@ class FullPageHTREncoderDecoder(nn.Module):
             dim_feedforward (int): the dimension of the feedforward network model in
                 the decoder
             encoder_name (str): name of the ResNet decoder to use. Choices:
-                (resnet18, resnet34, resnet50)
+                (resnet18, resnet34, resnet50, resnet31)
             drop_enc (int): dropout rate used in the encoder
             drop_dec (int): dropout rate used in the decoder
             activ_dec (str): activation function of the decoder

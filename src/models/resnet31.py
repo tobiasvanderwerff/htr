@@ -203,3 +203,12 @@ class ResNet31HTR(nn.Module):
             return tuple([outs[i] for i in self.out_indices])
 
         return x
+
+    @staticmethod
+    def resnet31_std_config(*args, **kwargs):
+        return ResNet31HTR(
+            *args,
+            layers=[1, 2, 5, 3],
+            channels=[64, 128, 256, 256, 512, 512, 512],
+            **kwargs,
+        )

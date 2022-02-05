@@ -256,7 +256,11 @@ class LitFullPageHTREncoderDecoder(pl.LightningModule):
         parser = parent_parser.add_argument_group("FullPageHTREncoderDecoder")
         parser.add_argument("--fphtr_learning_rate", type=float, default=0.0002)
         parser.add_argument("--fphtr_encoder", type=str, default="resnet18",
-                            choices=["resnet18", "resnet34", "resnet50"])
+                            choices=["resnet18", "resnet34", "resnet50", "resnet31"],
+                            help="Image encoder to use. Resnet{18,34,50} are "
+                                 "standard ResNet architectures (11.3M, "
+                                 "21.4M, 24.0M parameters respectively); Resnet31 is a "
+                                 "modified ResNet for HTR (46.0M parameters).")
         parser.add_argument("--fphtr_d_model", type=int, default=260)
         parser.add_argument("--fphtr_num_layers", type=int, default=6)
         parser.add_argument("--fphtr_nhead", type=int, default=4)
