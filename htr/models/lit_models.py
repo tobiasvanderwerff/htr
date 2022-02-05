@@ -111,20 +111,23 @@ class LitShowAttendRead(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr=self.learning_rate)
 
-        def _decay_factor(epoch: int, max_epoch: int, factor: float):
-            # In the SAR paper they decay every 10.000 steps, which is about 1/5 of
-            # the IAM training samples. However, since we can only decay per epoch,
-            # simply decay once per epoch.
-            if epoch == 0 or epoch >= max_epoch:
-                return 1
-            return factor
+        def _decay_factor(
+            epoch: int, max_expo: int, factor: float, decay_every: int = 10000
+        ):
+            # Exponential decay.
+            expo = int(self.global_step / decay_every)
+            if expo >= max_expo:
+                return factor ** max_expo
+            return factor ** expo
 
         factor = 0.9
-        # max_epoch is calculated as n where `lr * factor^n = 1e-5`
-        max_epoch = math.floor(math.log(1e-5 / self.learning_rate) / math.log(0.9))
+        min_lr = 1e-5
+
+        # max_expo is calculated as n where `lr * factor^n = 1e-5`
+        max_expo = math.floor(math.log(min_lr / self.learning_rate) / math.log(factor))
         scheduler = optim.lr_scheduler.LambdaLR(
             optimizer,
-            partial(_decay_factor, max_epoch=max_epoch, factor=factor),
+            partial(_decay_factor, max_expo=max_expo, factor=factor),
             verbose=True,
         )
         return [optimizer], [scheduler]
