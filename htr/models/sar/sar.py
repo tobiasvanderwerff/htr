@@ -11,9 +11,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 
-from src.models.resnet31 import ResNet31HTR
-from src.metrics import CharacterErrorRate, WordErrorRate
-from src.util import LabelEncoder
+from htr.models.resnet31 import ResNet31HTR
+from htr.metrics import CharacterErrorRate, WordErrorRate
+from htr.util import LabelEncoder
 
 
 class SARDecoder(nn.Module):

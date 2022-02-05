@@ -2,9 +2,9 @@ import math
 from typing import Optional, Dict, Union
 from functools import partial
 
-from src.models.fphtr.fphtr import FullPageHTREncoderDecoder
-from src.models.sar.sar import ShowAttendRead
-from src.util import LabelEncoder
+from htr.models.fphtr.fphtr import FullPageHTREncoderDecoder
+from htr.models.sar.sar import ShowAttendRead
+from htr.util import LabelEncoder
 
 import torch.optim as optim
 import pytorch_lightning as pl

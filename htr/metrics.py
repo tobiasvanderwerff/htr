@@ -1,4 +1,4 @@
-from src.util import LabelEncoder
+from htr.util import LabelEncoder
 
 import editdistance
 from torch import Tensor

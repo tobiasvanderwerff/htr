@@ -1,8 +1,8 @@
+Original repo: https://github.com/tobiasvanderwerff/full-page-handwriting-recognition
+
 # Full Page Handwriting Recognition
 Implementation of the paper "Full Page Handwriting Recognition via Image to Sequence
 Extraction" by Singh et al. (2021) ([Arxiv link](https://arxiv.org/abs/2103.06450)).
-
-![model-schematic](/home/tobias/Dropbox/master_AI/thesis/htr/img/model-schematic.png)
 
 _NOTE: I have not been able to reproduce the results from the original paper on full
 pages. Even though I succesfully managed to train models for word and line images,
@@ -84,8 +84,6 @@ Additionally, this repo includes an implementation of the synthetic data augment
 scheme used in the paper, namely combining random spans of words from IAM to create new
 line or form images. Below is an example of a generated form image (for more examples,
 check out the notebook `synthetic_data_augmentation.ipynb`).
-
-![synthetic_form_example](/home/tobias/Dropbox/master_AI/thesis/htr/img/synthetic_form_example.png)
 
 This synthetic data augmentation can be included in training by setting
 the `--synthetic_augmentation_proba` flag, which indicates the probability of applying

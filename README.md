@@ -7,7 +7,6 @@ Current models include:
 
 ## How to install
 ```shell
-git clone git@github.com:tobiasvanderwerff/htr.git
 pip install -e .
 ```
 

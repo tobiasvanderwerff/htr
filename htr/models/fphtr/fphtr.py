@@ -6,9 +6,9 @@ via Image to Sequence Extraction" by Singh et al.
 import math
 from typing import Dict, Any, Tuple, Optional, Union, Callable
 
-from src.metrics import CharacterErrorRate, WordErrorRate
-from src.util import LabelEncoder
-from src.models.resnet31 import ResNet31HTR
+from htr.metrics import CharacterErrorRate, WordErrorRate
+from htr.util import LabelEncoder
+from htr.models.resnet31 import ResNet31HTR
 
 import torch
 import torch.nn as nn
