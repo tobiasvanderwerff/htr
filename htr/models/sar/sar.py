@@ -434,6 +434,10 @@ class ShowAttendRead(nn.Module):
             ignore_index=self.pad_tkn_idx, reduction=loss_reduction
         )
 
+    @property
+    def clf_layer(self):
+        return self.lstm_decoder.prediction
+
     def forward_teacher_forcing(
         self, imgs: Tensor, targets: Tensor
     ) -> Tuple[Tensor, Tensor]:

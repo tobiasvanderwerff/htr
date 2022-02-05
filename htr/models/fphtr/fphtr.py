@@ -386,6 +386,10 @@ class FullPageHTREncoderDecoder(nn.Module):
             ignore_index=self.pad_tkn_idx, reduction=loss_reduction
         )
 
+    @property
+    def clf_layer(self):
+        return self.decoder.clf
+
     def forward(
         self, imgs: Tensor, targets: Optional[Tensor] = None
     ) -> Tuple[Tensor, Tensor, Union[Tensor, None]]:
