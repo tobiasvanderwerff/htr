@@ -1,9 +1,9 @@
 import math
 from typing import Tuple, Optional
 
-from models.lit_models import LitFullPageHTREncoderDecoder, LitShowAttendRead
-from util import matplotlib_imshow, LabelEncoder, decode_prediction_and_target
-from data import IAMDataset
+from htr.models.lit_models import LitFullPageHTREncoderDecoder, LitShowAttendRead
+from htr.util import matplotlib_imshow, LabelEncoder, decode_prediction_and_target
+from htr.data import IAMDataset
 
 import torch
 import pytorch_lightning as pl

@@ -13,7 +13,7 @@ pip install -e .
 ## Examples
 ### FPHTR
 ```shell
-python src/main.py --data_dir /path/to/IAM \
+python htr/main.py --data_dir /path/to/IAM \
                    --model fphtr \
                    --data_format word \
                    --max_epochs 3 \
@@ -23,7 +23,7 @@ python src/main.py --data_dir /path/to/IAM \
 
 ### SAR
 ```shell
-python src/main.py --data_dir /path/to/IAM \
+python htr/main.py --data_dir /path/to/IAM \
                    --model sar \
                    --max_epochs 3 \
                    --precision 16 \

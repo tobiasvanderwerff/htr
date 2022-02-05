@@ -13,8 +13,8 @@ from torch import Tensor
 from torch.utils.data import Dataset
 from PIL import Image
 
-from util import read_xml, find_child_by_tag, set_seed, LabelEncoder
-from transforms import IAMImageTransforms
+from htr.util import read_xml, find_child_by_tag, set_seed, LabelEncoder
+from htr.transforms import IAMImageTransforms
 
 
 class IAMDataset(Dataset):
