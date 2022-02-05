@@ -128,6 +128,10 @@ class IAMDataset(Dataset):
     def vocab(self):
         return self.label_enc.classes
 
+    @property
+    def writer_ids(self) -> List[int]:
+        return list(self.data["writer_id"].unique())
+
     @staticmethod
     def collate_fn(
         batch: Sequence[Tuple[np.ndarray, np.ndarray]],
