@@ -171,8 +171,8 @@ class LitFullPageHTREncoderDecoder(pl.LightningModule):
         nhead: int = 4,
         dim_feedforward: int = 1024,
         encoder_name: str = "resnet18",
-        drop_enc: int = 0.5,
-        drop_dec: int = 0.5,
+        drop_enc: int = 0.1,
+        drop_dec: int = 0.1,
         activ_dec: str = "gelu",
         loss_reduction: str = "mean",
         vocab_len: Optional[int] = None,  # if not specified len(label_encoder) is used
@@ -268,9 +268,9 @@ class LitFullPageHTREncoderDecoder(pl.LightningModule):
         parser.add_argument("--fphtr_num_layers", type=int, default=6)
         parser.add_argument("--fphtr_nhead", type=int, default=4)
         parser.add_argument("--fphtr_dim_feedforward", type=int, default=1024)
-        parser.add_argument("--fphtr_drop_enc", type=float, default=0.5,
+        parser.add_argument("--fphtr_drop_enc", type=float, default=0.1,
                             help="Encoder dropout.")
-        parser.add_argument("--fphtr_drop_dec", type=float, default=0.5,
+        parser.add_argument("--fphtr_drop_dec", type=float, default=0.1,
                             help="Decoder dropout.")
         return parent_parser
         # fmt: on
