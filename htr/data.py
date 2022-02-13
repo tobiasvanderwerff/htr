@@ -75,11 +75,11 @@ class IAMDataset(Dataset):
         # Process the data.
         if not hasattr(self, "data"):
             if self.parse_method == "form":
-                self.data = self._get_forms()
+                self._data = self._get_forms()
             elif self.parse_method == "word":
-                self.data = self._get_words(skip_bad_segmentation=True)
+                self._data = self._get_words(skip_bad_segmentation=True)
             elif self.parse_method == "line":
-                self.data = self._get_lines()
+                self._data = self._get_lines()
 
         # Create the label encoder.
         if self.label_enc is None:
@@ -137,6 +137,15 @@ class IAMDataset(Dataset):
     @property
     def writer_ids(self) -> List[int]:
         return list(self.data["writer_id"].unique())
+
+    @property
+    def data(self) -> pd.Dataframe:
+        return self._data
+
+    @data.setter
+    def data(self, new_data):
+        self._data = new_data
+        self.writer_id_to_idx = {wid: idx for idx, wid in enumerate(self.writer_ids)}
 
     @staticmethod
     def collate_fn(
