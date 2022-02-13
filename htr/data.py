@@ -139,7 +139,7 @@ class IAMDataset(Dataset):
         return list(self.data["writer_id"].unique())
 
     @property
-    def data(self) -> pd.Dataframe:
+    def data(self) -> pd.DataFrame:
         return self._data
 
     @data.setter
