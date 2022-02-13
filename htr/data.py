@@ -49,6 +49,7 @@ class IAMDataset(Dataset):
         parse_method: str,
         split: str,
         return_writer_id: bool = False,
+        return_writer_id_as_idx: bool = False,
         only_lowercase: bool = False,
         label_enc: Optional[LabelEncoder] = None,
     ):
@@ -65,6 +66,7 @@ class IAMDataset(Dataset):
 
         self._split = split
         self._return_writer_id = return_writer_id
+        self.return_writer_id_as_idx = return_writer_id_as_idx
         self.only_lowercase = only_lowercase
         self.root = Path(root)
         self.label_enc = label_enc
@@ -104,6 +106,7 @@ class IAMDataset(Dataset):
         self.id_to_idx = {
             Path(self.data.iloc[i]["img_path"]).stem: i for i in range(len(self))
         }
+        self.writer_id_to_idx = {wid: idx for idx, wid in enumerate(self.writer_ids)}
 
     def __len__(self):
         return len(self.data)
@@ -121,7 +124,10 @@ class IAMDataset(Dataset):
         if self.transforms is not None:
             img = self.transforms(image=img)["image"]
         if self._return_writer_id:
-            return img, data["writer_id"], data["target_enc"]
+            writer_id = data["writer_id"]
+            if self.return_writer_id_as_idx:
+                writer_id = self.writer_id_to_idx[writer_id]
+            return img, writer_id, data["target_enc"]
         return img, data["target_enc"]
 
     @property
