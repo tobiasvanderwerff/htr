@@ -293,8 +293,8 @@ class FullPageHTREncoder(nn.Module):
             self.encoder = nn.Sequential(cnv_1, *modules[1:-2])
             self.resnet_out_features = resnet.fc.in_features
         else:  # resnet31
-            self.resnet_out_features = ResNet31HTR.resnet31_std_config(base_channels=1)
-            num_out_feats = self.encoder.conv5.out_channels
+            self.encoder = ResNet31HTR.resnet31_std_config(base_channels=1)
+            self.resnet_out_features = self.encoder.conv5.out_channels
 
         self.linear = nn.Conv2d(
             self.resnet_out_features, d_model, kernel_size=1
