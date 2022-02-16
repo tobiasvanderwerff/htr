@@ -261,6 +261,7 @@ class FullPageHTREncoder(nn.Module):
     drop: nn.Dropout
     d_model: int
     model_name: str
+    resnet_out_features: int
 
     def __init__(self, d_model: int, model_name: str, dropout: float):
         super().__init__()
@@ -290,13 +291,13 @@ class FullPageHTREncoder(nn.Module):
                 bias=cnv_1.bias,
             )
             self.encoder = nn.Sequential(cnv_1, *modules[1:-2])
-            num_out_feats = resnet.fc.in_features
+            self.resnet_out_features = resnet.fc.in_features
         else:  # resnet31
-            self.encoder = ResNet31HTR.resnet31_std_config(base_channels=1)
+            self.resnet_out_features = ResNet31HTR.resnet31_std_config(base_channels=1)
             num_out_feats = self.encoder.conv5.out_channels
 
         self.linear = nn.Conv2d(
-            num_out_feats, d_model, kernel_size=1
+            self.resnet_out_features, d_model, kernel_size=1
         )  # 1x1 convolution
 
     def forward(self, imgs: Tensor, intermediate_transform: Callable = None):
