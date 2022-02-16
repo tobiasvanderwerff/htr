@@ -299,8 +299,10 @@ class FullPageHTREncoder(nn.Module):
             num_out_feats, d_model, kernel_size=1
         )  # 1x1 convolution
 
-    def forward(self, imgs):
+    def forward(self, imgs: Tensor, intermediate_transform: Callable = None):
         x = self.encoder(imgs.unsqueeze(1))  # x: (B, d_model, w, h)
+        if intermediate_transform is not None:
+            x = intermediate_transform(x)
         x = self.linear(x).transpose(1, 2).transpose(2, 3)  # x: (B, w, h, d_model)
         x = self.pos_emb(x)  # x: (B, w, h, d_model)
         x = self.drop(x)  # x: (B, w, h, d_model)
@@ -391,7 +393,9 @@ class FullPageHTREncoderDecoder(nn.Module):
         return self.decoder.clf
 
     def forward(
-        self, imgs: Tensor, targets: Optional[Tensor] = None
+        self,
+        imgs: Tensor,
+        targets: Optional[Tensor] = None,
     ) -> Tuple[Tensor, Tensor, Union[Tensor, None]]:
         """
         Run inference on the model using greedy decoding.
