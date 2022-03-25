@@ -13,7 +13,7 @@ from torch import Tensor
 
 from htr.models.resnet31 import ResNet31HTR
 from htr.metrics import CharacterErrorRate, WordErrorRate
-from htr.util import LabelEncoder
+from htr.util import LabelEncoder, get_resnet
 
 
 class SARDecoder(nn.Module):
@@ -385,11 +385,12 @@ class ShowAttendRead(nn.Module):
         label_encoder: LabelEncoder,
         max_seq_len: int = 50,
         d_enc: int = 512,
-        d_model: int = 512,
+        # d_model: int = 512,
         d_k: int = 512,
         dec_dropout: int = 0.0,
         enc_dropout: int = 0.1,
         pred_dropout: int = 0.1,
+        resnet_arch: str = "resnet31",
         loss_reduction: str = "mean",
         vocab_len: Optional[int] = None,
     ):
@@ -402,10 +403,10 @@ class ShowAttendRead(nn.Module):
             ["<EOS>", "<SOS>", "<PAD>"]
         )
 
-        self.resnet_encoder = ResNet31HTR.resnet31_std_config(base_channels=1)
+        self.resnet_encoder, resnet_out_features = get_resnet(resnet_arch, n_channels=1)
         self.lstm_encoder = SAREncoder(
             dropout=enc_dropout,
-            d_model=d_model,
+            d_model=resnet_out_features,
             d_enc=d_enc,
             bidirectional=False,
             enc_gru=False,
@@ -415,7 +416,7 @@ class ShowAttendRead(nn.Module):
             pad_tkn_idx=self.pad_tkn_idx,
             sos_tkn_idx=self.sos_tkn_idx,
             eos_tkn_idx=self.eos_tkn_idx,
-            d_model=d_model,
+            d_model=resnet_out_features,
             d_enc=d_enc,
             d_k=d_k,
             dec_dropout=dec_dropout,
@@ -451,6 +452,9 @@ class ShowAttendRead(nn.Module):
             - logits, obtained at each time step during decoding
             - loss value
         """
+        if imgs.ndim == 3:
+            imgs.unsqueeze_(1)
+
         feats = self.resnet_encoder(imgs)
         h_holistic = self.lstm_encoder(feats)
         logits = self.lstm_decoder.forward_teacher_forcing(feats, h_holistic, targets)
@@ -470,6 +474,9 @@ class ShowAttendRead(nn.Module):
             - loss value (only calculated when specifiying `targets`, otherwise
                   defaults to None)
         """
+        if imgs.ndim == 3:
+            imgs.unsqueeze_(1)
+
         feats = self.resnet_encoder(imgs)
         h_holistic = self.lstm_encoder(feats)
         logits, sampled_ids = self.lstm_decoder(feats, h_holistic)

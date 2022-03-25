@@ -27,8 +27,9 @@ class LitShowAttendRead(pl.LightningModule):
         learning_rate: float = 0.001,
         max_seq_len: int = 50,
         d_enc: int = 512,
-        d_model: int = 512,
+        # d_model: int = 512,
         d_k: int = 512,
+        resnet_arch: str = "resnet31",
         dec_dropout: int = 0.0,
         enc_dropout: int = 0.1,
         pred_dropout: int = 0.1,
@@ -46,7 +47,8 @@ class LitShowAttendRead(pl.LightningModule):
             "max_seq_len",
             "learning_rate",
             "d_enc",
-            "d_model",
+            # "d_model",
+            "resnet_arch",
             "dec_dropout",
             "enc_dropout",
             "pred_dropout",
@@ -58,7 +60,8 @@ class LitShowAttendRead(pl.LightningModule):
             label_encoder=label_encoder,
             max_seq_len=max_seq_len,
             d_enc=d_enc,
-            d_model=d_model,
+            # d_model=d_model,
+            resnet_arch=resnet_arch,
             dec_dropout=dec_dropout,
             enc_dropout=enc_dropout,
             pred_dropout=pred_dropout,
@@ -138,8 +141,14 @@ class LitShowAttendRead(pl.LightningModule):
         parser = parent_parser.add_argument_group("ShowAttendRead")
         parser.add_argument("--sar_learning_rate", type=float, default=0.001)
         parser.add_argument("--sar_d_enc", type=int, default=512)
-        parser.add_argument("--sar_d_model", type=int, default=512)
+        # parser.add_argument("--sar_d_model", type=int, default=512)
         parser.add_argument("--sar_d_k", type=int, default=512)
+        parser.add_argument("--sar_resnet", type=str, default="resnet18",
+                            choices=["resnet18", "resnet34", "resnet50", "resnet31"],
+                            help="Image encoder to use. Resnet{18,34,50} are "
+                                 "standard ResNet architectures (11.3M, "
+                                 "21.4M, 24.0M parameters respectively); Resnet31 is a "
+                                 "modified ResNet for HTR (46.0M parameters).")
         parser.add_argument("--sar_dec_dropout", type=float, default=0.0,
                             help="Decoder dropout.")
         parser.add_argument("--sar_enc_dropout", type=float, default=0.1,

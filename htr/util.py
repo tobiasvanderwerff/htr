@@ -4,11 +4,41 @@ import pickle
 from pathlib import Path
 from typing import Union, Any, List, Optional, Sequence, Dict, Tuple
 
+from htr.models.resnet31 import ResNet31HTR
 import torch
+import torch.nn as nn
 import matplotlib.pyplot as plt
 import numpy as np
 from torch import Tensor
 from pytorch_lightning.callbacks import TQDMProgressBar
+import torchvision
+
+
+def get_resnet(arch: str, n_channels: int):
+    _models = ["resnet18", "resnet34", "resnet50", "resnet31"]
+    err_message = f"{arch} is not an available option: {_models}"
+    assert arch in _models, err_message
+
+    if arch != "resnet31":
+        resnet = getattr(torchvision.models, arch)(pretrained=False)
+        modules = list(resnet.children())
+
+        # Change the first conv layer to take as input a n-channel image.
+        cnv_1 = modules[0]
+        cnv_1 = nn.Conv2d(
+            n_channels,
+            cnv_1.out_channels,
+            cnv_1.kernel_size,
+            cnv_1.stride,
+            cnv_1.padding,
+            bias=cnv_1.bias,
+        )
+        model = nn.Sequential(cnv_1, *modules[1:-2])
+        model_out_features = resnet.fc.in_features
+    else:  # resnet31
+        model = ResNet31HTR.resnet31_std_config(base_channels=n_channels)
+        model_out_features = model.conv5.out_channels
+    return model, model_out_features
 
 
 def pickle_save(obj, file):
