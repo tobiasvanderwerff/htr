@@ -33,6 +33,7 @@ class LitShowAttendRead(pl.LightningModule):
         dec_dropout: int = 0.0,
         enc_dropout: int = 0.1,
         pred_dropout: int = 0.1,
+        use_lr_scheduler: bool = False,
         loss_reduction: str = "mean",
         vocab_len: Optional[int] = None,  # if not specified len(label_encoder) is used
         params_to_log: Optional[Dict[str, Union[str, float, int]]] = None,
@@ -41,6 +42,7 @@ class LitShowAttendRead(pl.LightningModule):
 
         # Save hyperparameters.
         self.learning_rate = learning_rate
+        self.use_lr_scheduler = use_lr_scheduler
         if params_to_log is not None:
             self.save_hyperparameters(params_to_log)
         self.save_hyperparameters(
@@ -49,6 +51,7 @@ class LitShowAttendRead(pl.LightningModule):
             "d_enc",
             # "d_model",
             "resnet_arch",
+            "use_lr_scheduler",
             "dec_dropout",
             "enc_dropout",
             "pred_dropout",
@@ -126,14 +129,18 @@ class LitShowAttendRead(pl.LightningModule):
         factor = 0.9
         min_lr = 1e-5
 
-        # max_expo is calculated as n where `lr * factor^n = 1e-5`
-        max_expo = math.floor(math.log(min_lr / self.learning_rate) / math.log(factor))
-        scheduler = optim.lr_scheduler.LambdaLR(
-            optimizer,
-            partial(_decay_factor, max_expo=max_expo, factor=factor),
-            verbose=True,
-        )
-        return [optimizer], [scheduler]
+        if self.use_lr_scheduler:
+            # max_expo is calculated as n where `lr * factor^n = 1e-5`
+            max_expo = math.floor(
+                math.log(min_lr / self.learning_rate) / math.log(factor)
+            )
+            scheduler = optim.lr_scheduler.LambdaLR(
+                optimizer,
+                partial(_decay_factor, max_expo=max_expo, factor=factor),
+                verbose=True,
+            )
+            return [optimizer], [scheduler]
+        return optimizer
 
     @staticmethod
     def add_model_specific_args(parent_parser):
@@ -149,6 +156,8 @@ class LitShowAttendRead(pl.LightningModule):
                                  "standard ResNet architectures (11.3M, "
                                  "21.4M, 24.0M parameters respectively); Resnet31 is a "
                                  "modified ResNet for HTR (46.0M parameters).")
+        parser.add_argument("--use_lr_scheduler", action="store_true",
+                            help="Use a exponentially decaying learning rate.")
         parser.add_argument("--sar_dec_dropout", type=float, default=0.0,
                             help="Decoder dropout.")
         parser.add_argument("--sar_enc_dropout", type=float, default=0.1,

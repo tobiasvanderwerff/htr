@@ -215,6 +215,7 @@ def main(args):
                 # d_model=args.sar_d_model,
                 d_k=args.sar_d_k,
                 resnet_arch=args.sar_resnet,
+                use_lr_scheduler=args.use_lr_scheduler,
                 dec_dropout=args.sar_dec_dropout,
                 enc_dropout=args.sar_enc_dropout,
                 pred_dropout=args.sar_pred_dropout,
