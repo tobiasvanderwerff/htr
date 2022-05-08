@@ -7,7 +7,7 @@ import math
 from typing import Dict, Any, Tuple, Optional, Union, Callable
 
 from htr.metrics import CharacterErrorRate, WordErrorRate
-from htr.util import LabelEncoder
+from htr.util import LabelEncoder, get_resnet
 from htr.models.resnet31 import ResNet31HTR
 
 import torch
@@ -267,34 +267,13 @@ class FullPageHTREncoder(nn.Module):
         super().__init__()
 
         assert d_model % 4 == 0
-        _models = ["resnet18", "resnet34", "resnet50", "resnet31"]
-        err_message = f"{model_name} is not an available option: {_models}"
-        assert model_name in _models, err_message
 
         self.d_model = d_model
         self.model_name = model_name
         self.pos_emb = PositionalEmbedding2D(d_model)
         self.drop = nn.Dropout(p=dropout)
 
-        if model_name != "resnet31":
-            resnet = getattr(torchvision.models, model_name)(pretrained=False)
-            modules = list(resnet.children())
-
-            # Change the first conv layer to take as input a single channel image.
-            cnv_1 = modules[0]
-            cnv_1 = nn.Conv2d(
-                1,
-                cnv_1.out_channels,
-                cnv_1.kernel_size,
-                cnv_1.stride,
-                cnv_1.padding,
-                bias=cnv_1.bias,
-            )
-            self.encoder = nn.Sequential(cnv_1, *modules[1:-2])
-            self.resnet_out_features = resnet.fc.in_features
-        else:  # resnet31
-            self.encoder = ResNet31HTR.resnet31_std_config(base_channels=1)
-            self.resnet_out_features = self.encoder.conv5.out_channels
+        self.encoder, self.resnet_out_features = get_resnet(model_name, n_channels=1)
 
         self.linear = nn.Conv2d(
             self.resnet_out_features, d_model, kernel_size=1
